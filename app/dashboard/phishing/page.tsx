@@ -13,6 +13,7 @@ import {
     Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PhishingTable from '@/components/table/PhishingTable';
 
 // Mock imports - ensure these paths match your project structure
 import PieChartWithNeedlePhishing from '@/components/real_time_guages/PieChartWithNeedlePhishing';
@@ -159,7 +160,21 @@ export default function Page() {
                         </div>
                     </div>
                 </motion.div>
+
+                {/* ACTIVE PHISHINGS TABLE */}
+                <div className="w-full">
+                    <h3 className="text-xl font-bold text-gray-500  text-center uppercase tracking-widest mb-4 ml-2">
+                        Active Phishings
+                    </h3>
+
+                    <PhishingTable />
+
+                </div>
+
+
             </motion.div>
+
+
 
             {/* CONTROL PANEL */}
             <motion.div
