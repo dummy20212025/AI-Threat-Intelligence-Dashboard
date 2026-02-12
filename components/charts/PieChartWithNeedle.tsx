@@ -4,8 +4,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const GAUGE_DATA = [
     { name: '5000-10000', value: 5000, color: '#10b981' },
-    { name: '10,000-15,000', value: 10000, color: '#f59e0b' },
-    { name: '15,000-20,000', value: 20000, color: '#ef4444' },
+    { name: '10,000-15,000', value: 5000, color: '#f59e0b' },
+    { name: '15,000-20,000', value: 5000, color: '#ef4444' },
 ];
 
 export default function PieChartWithNeedle({ label, currentValue }: { label: string; currentValue: number }) {
