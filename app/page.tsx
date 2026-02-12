@@ -14,6 +14,7 @@ import PieWithGradientTOR from "@/components/ipCountCharts/PieWithGradientTOR";
 import PieWithGradientPhishing from "@/components/ipCountCharts/PieWithGradientPhishing";
 import PieWithGradientTunneling from "@/components/ipCountCharts/PieWithGradientTunneling";
 import PieWithGradientPortScan from "@/components/ipCountCharts/PieWithGradientPortscan";
+import PieChartWithNeedlePhishing from "@/components/real_time_guages/PieChartWithNeedlePhishing";
 
 
 export default async function Dashboard() {
@@ -92,7 +93,7 @@ export default async function Dashboard() {
 
               <div className="w-full max-w-[200px] aspect-square flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
                 {/* Example: Value is 12,500, which is exactly in the middle (Orange) */}
-                <PieChartWithNeedle label={'Phishing'} currentValue={13111} />
+                <PieChartWithNeedlePhishing label={'Phishing'} currentValue={59} />
               </div>
             </div>
           </div>
@@ -103,7 +104,7 @@ export default async function Dashboard() {
       {/* VOLUME DISTRIBUTION */}
       <div className="w-full">
         <h3 className="text-xl font-bold text-gray-500 text-center uppercase tracking-widest mb-4 ml-2">
-          Top Attackers
+          Top Attackers IP Distribution
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">

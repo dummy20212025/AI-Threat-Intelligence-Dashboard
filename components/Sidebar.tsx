@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { BarChart3, ShieldAlert, Globe, Lock, Scan, AlertTriangle,GlobeLockIcon } from 'lucide-react';
+import { BarChart3, ShieldAlert, Globe, Lock, Scan, AlertTriangle, GlobeLockIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Sidebar() {
@@ -28,12 +28,15 @@ export default function Sidebar() {
       {/* Navigation (scrolls if needed) */}
 
       <NavItem href="/" icon={<BarChart3 />} label="Dashboard" theme={theme} />
-      <NavItem href="/dashboard/anamoly" icon={<ShieldAlert />} label="Anomaly" theme={theme} />
+      <NavItem href="/dashboard/anomaly" icon={<ShieldAlert />} label="Anomaly" theme={theme} />
       <NavItem href="/dashboard/tor" icon={<Globe />} label="TOR" theme={theme} />
       <NavItem href="/dashboard/portscan" icon={<Scan />} label="PortScan" theme={theme} />
       <NavItem href="/dashboard/tunneling" icon={<Lock />} label="Tunneling" theme={theme} />
       <NavItem href="/dashboard/phishing" icon={<AlertTriangle />} label="Phishing" theme={theme} />
-      <NavItem href="/dashboard/vpn" icon={<GlobeLockIcon/>} label="VPN" theme={theme} />
+      <NavItem href="/dashboard/vpn" icon={<GlobeLockIcon />} label="VPN" theme={theme} />
+      <NavItem href="/dashboard/tunnelhunter" icon={<GlobeLockIcon />} label="TunnelHunter" theme={theme} />
+
+
 
 
 

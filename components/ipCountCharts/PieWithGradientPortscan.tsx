@@ -81,19 +81,19 @@ export default function PieWithGradientPortScan() {
             onMouseLeave={() => setActiveIndex(undefined)}
           >
             {/* Added Label for the Total Count */}
-            <Label 
+            {/* <Label 
               value="29490"
               position="center" 
               fill="#334155"
               dx={-25}
               dy={-10}
               style={{ fontSize: '20px', fontWeight: 'bold', marginLeft: '10' }}
-            />
+            /> */}
             <Label 
-              value="Total Event Counts" 
+              value="Top Attacker IPs" 
               position="center" 
               dx={-25}
-              dy={20} // Offsets this text slightly below the count
+              dy={5} // Offsets this text slightly below the count
               fill="#94a3b8"
               style={{ fontSize: '10px', textTransform: 'uppercase' }}
             />

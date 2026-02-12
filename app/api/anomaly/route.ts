@@ -5,15 +5,20 @@ import fs from 'fs';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const start = searchParams.get('start'); // e.g., "2026-02-09"
-  const end = searchParams.get('end');     // e.g., "2026-02-09"
+  const start = searchParams.get('start'); // Expects "YYYY-MM-DDTHH:MM"
+  const end = searchParams.get('end');     // Expects "YYYY-MM-DDTHH:MM"
   const days = searchParams.get('days');
 
-  // Helper to convert "YYYY-MM-DD" to "DD.MM.YYYY HH:MM:SS"
-  const convertFormat = (dateStr: string, time: string) => {
-    if (!dateStr) return "";
-    const [y, m, d] = dateStr.split("-");
-    return `${d}.${m}.${y} ${time}`;
+  /**
+   * Converts "YYYY-MM-DDTHH:MM" (from datetime-local) 
+   * to "DD.MM.YYYY HH:MM:SS" (for Python script)
+   */
+  const convertFormat = (dateTimeStr: string) => {
+    if (!dateTimeStr) return "";
+    const [datePart, timePart] = dateTimeStr.split("T");
+    const [y, m, d] = datePart.split("-");
+    // Adding :00 for seconds to match Python format strictly
+    return `${d}.${m}.${y} ${timePart}:00`;
   };
 
   let finalStart = "";
@@ -30,18 +35,17 @@ export async function GET(request: NextRequest) {
     finalStart = fmt(past);
     finalEnd = fmt(now);
   } else if (start && end) {
-    finalStart = convertFormat(start, "00:00:00");
-    finalEnd = convertFormat(end, "23:59:59");
+    finalStart = convertFormat(start);
+    finalEnd = convertFormat(end);
   }
 
   return new Promise((resolve) => {
     const scriptPath = path.join(process.cwd(), 'scripts', 'anomaly_pull_data_from_elastic.py');
     const csvPath = path.join(process.cwd(), 'anomaly.csv');
 
-    // Remove old CSV if it exists to ensure fresh data
     if (fs.existsSync(csvPath)) fs.unlinkSync(csvPath);
 
-    // Spawn Python Process
+    // Pass the formatted strings as arguments to Python
     const pythonProcess = spawn('python3', [scriptPath, finalStart, finalEnd]);
 
     let errorData = "";

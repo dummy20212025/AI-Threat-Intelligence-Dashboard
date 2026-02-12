@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
   }
 
   return new Promise((resolve) => {
-    const scriptPath = path.join(process.cwd(), 'scripts', 'tor_pull_data_from_elastic.py');
-    const csvPath = path.join(process.cwd(), 'tor.csv');
+    const scriptPath = path.join(process.cwd(), 'scripts', 'portscan_pull_data_from_elastic.py');
+    const csvPath = path.join(process.cwd(), 'portscan.csv');
 
     if (fs.existsSync(csvPath)) fs.unlinkSync(csvPath);
 

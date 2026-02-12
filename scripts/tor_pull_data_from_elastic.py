@@ -15,12 +15,54 @@ import sys
 import requests
 import socket
 from concurrent.futures import ThreadPoolExecutor, as_completed
-# import asyncio
-# import aiodns
+#import asyncio
+#import aiodns
 from tqdm import tqdm
+import os
+import geoip2.database
 
 from_zone = tz.tzutc()
 to_zone = tz.tzlocal()
+
+GEOLITE2_MMDB = os.environ.get(
+    "GEOLITE2_MMDB",
+    os.path.join(os.path.dirname(__file__), "GeoLite2-Country.mmdb")
+)
+
+def get_country(reader, ip):
+    """
+    Return country name for an IP.
+    """
+    if not ip:
+        return ""
+    try:
+        response = reader.country(ip)
+        return response.country.name or ""
+    except Exception:
+        return "Unknown"
+
+
+def enrich_df_with_geoip(df, geoip_db_path):
+    """
+    Enrich a DataFrame with country information for SourceIP and DstIP.
+    
+    Args:
+        df (pd.DataFrame): Input dataframe containing 'SourceIP' and 'DstIP'
+        geoip_db_path (str): Path to GeoLite2 mmdb file
+    
+    Returns:
+        pd.DataFrame: Same dataframe with added country columns
+    """
+    with geoip2.database.Reader(geoip_db_path) as reader:
+        df["SourceIP_Country"] = df["SourceIP"].apply(
+            lambda ip: get_country(reader, ip)
+        )
+        df["DstIP_Country"] = df["TOR_IP"].apply(
+            lambda ip: get_country(reader, ip)
+        )
+
+    return df
+
 
 def fetch_tor_nodes(running=True):
     url = "https://onionoo.torproject.org/details"
@@ -82,10 +124,10 @@ async def is_hosted_async(domain, resolver):
     except:
         return False
 
-# async def async_check(domains):
-#     resolver = aiodns.DNSResolver(timeout=1)
-#     tasks = [is_hosted_async(d, resolver) for d in domains]
-#     return await asyncio.gather(*tasks)
+async def async_check(domains):
+    resolver = aiodns.DNSResolver(timeout=1)
+    tasks = [is_hosted_async(d, resolver) for d in domains]
+    return await asyncio.gather(*tasks)
 
 # def preprocess(filenames):
 #     df=pd.DataFrame()
@@ -270,8 +312,8 @@ def main():
                 obj['@timestamp'] = source.get('@timestamp')
                 obj['SourceIP'] = source.get('SourceIP')
                 obj['SrcPort'] = source.get('SrcPort')
-                obj['DstIP'] = source.get('DstIP')
-                obj['DstPort'] = source.get('DstPort') 
+                obj['TOR_IP'] = source.get('DstIP')
+                obj['TOR_Port'] = source.get('DstPort') 
                 obj['sslServerName'] = source.get('sslServerName_sni_tor')
                 arr.append(obj)
                 if(len(arr) > max_rows_per_file):
@@ -305,6 +347,8 @@ if __name__=="__main__":
     # print(filename_list)
     # filename_list=[list]
     final_df = preprocess(filename_list)
+    final_df = enrich_df_with_geoip(final_df, GEOLITE2_MMDB)
+    final_df.drop(['SourceIP','SrcPort','SourceIP_Country'],axis=1,inplace=True)
     # FetchTOR NODE FOR SHOWING ACTIVE NAD DEAD NODES. BUT APPLICABLE ONLY ON REAL TIME DATAT NOT ON PCAP.
     # active_df = fetch_tor_nodes(running=True)
     # dead_df = fetch_tor_nodes(running=False)

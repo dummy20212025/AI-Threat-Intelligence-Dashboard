@@ -102,19 +102,19 @@ def convert_to_utc(time_string,format="%d.%m.%Y %H:%M:%S"):
 def get_filename(timestring,prefix='phish'):
     return prefix+'-'+timestring.replace('.','-').replace(' ','-')
 
-# def main(date_time):
-def main():
+def main(date_time):
+# def main():
     esClient = create_esConnection()
     # print(esClient.info)
     time_format = "%d.%m.%Y %H:%M:%S"
     #max_rows_per_file = 1000000
     max_rows_per_file = 100000
-    time_range = [
-        ['04.02.2026 09:20:00','09.02.2026 11:10:00']
-        ]
     # time_range = [
-    #    date_time
-    #    ]
+    #     ['04.02.2026 09:20:00','09.02.2026 11:10:00']
+    #     ]
+    time_range = [
+       date_time
+       ]
 
     filename_list=[]
         
@@ -200,13 +200,19 @@ def main():
     
 if __name__=="__main__": 
     print("################################### STARTING Entity CLIENT ###################################")
-    #start=sys.argv[1]
-    #end=sys.argv[2]
-    #date_time=[start,end]
-    #filename_list=main(date_time)
-    filename_list=main()
+    start=sys.argv[1]
+    end=sys.argv[2]
+    date_time=[start,end]
+    print(date_time)
+    filename_list=main(date_time)
+    # filename_list=main()
     print(filename_list)
-    final_df = preprocess(filename_list)
-    final_df.to_csv("phish.csv",index=False)
+    if len(filename_list)>0:
+        final_df = preprocess(filename_list)
+        final_df.to_csv("phish.csv",index=False)
+    else:
+        final_df=pd.DataFrame()
+        final_df.to_csv("phish.csv",index=False)
+    
 
 
