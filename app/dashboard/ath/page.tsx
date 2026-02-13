@@ -1,19 +1,37 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import { parseCSV } from "@/lib/csvParser";
 import { groupByCount } from "@/lib/dataTransform";
 import PieChartWithNeedle from "@/components/charts/PieChartWithNeedle";
 import PieWithGradientTOR from "@/components/ipCountCharts/PieWithGradientTOR";
 import PieWithGradientTunneling from "@/components/ipCountCharts/PieWithGradientTunneling";
 
+// Import client-side animation wrappers
 import { MDiv, MH3, containerVariants, itemVariants } from "@/components/framer/MotionWrappers";
 
-export default async function Dashboard() {
-    const phish = await parseCSV("phish_demo.csv");
-    const tor = await parseCSV("tor_demo.csv");
+export default function Dashboard() {
+    const { theme, resolvedTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    
+    // Note: Since we moved to "use client", 
+    // you would typically fetch your CSV data in a useEffect 
+    // or pass it as props from a server layout.
+    
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
-    const torIPs = groupByCount(tor, "DstIP").slice(0, 10);
+    // Derived theme state
+    const isDark = mounted && (resolvedTheme === "dark" || theme === "dark");
+
+    // Prevent hydration flicker
+    if (!mounted) return null;
 
     return (
-        <div className="flex min-h-screen w-full bg-gray-50">
+        <div className={`flex min-h-screen w-full transition-colors duration-700 
+            ${isDark ? "bg-slate-950 text-white" : "bg-gray-50 text-slate-900"}`}>
 
             <MDiv
                 initial="hidden"
@@ -23,52 +41,65 @@ export default async function Dashboard() {
             >
                 {/* HEADER */}
                 <MDiv variants={itemVariants} className="w-full text-center">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-blue-500 tracking-tight leading-tight">
+                    <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight leading-tight transition-colors
+                        ${isDark ? "text-blue-500" : "text-blue-600"}`}>
                         AI-Driven Tunnel Hunter (ATH)
                     </h2>
                     <MDiv
                         initial={{ width: 0 }}
                         animate={{ width: "12rem" }}
                         transition={{ delay: 0.5, duration: 0.8 }}
-                        className="h-1.5 bg-blue-600 mx-auto mt-4 rounded-full"
+                        className={`h-1.5 mx-auto mt-4 rounded-full shadow-lg 
+                            ${isDark ? "bg-blue-500 shadow-blue-500/40" : "bg-blue-600 shadow-blue-600/20"}`}
                     />
                 </MDiv>
 
                 {/* REAL-TIME GAUGES */}
                 <MDiv variants={itemVariants} className="w-full">
-                    <MH3 className="text-xl font-bold text-gray-500 text-center uppercase tracking-widest mb-6 ml-2">
+                    <MH3 className={`text-xl font-bold text-center uppercase tracking-widest mb-6 transition-colors
+                        ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                         Real-time Gauges
                     </MH3>
 
                     <div className="w-full flex justify-center py-10 px-4">
-                        <div className="w-full max-w-5xl bg-white/70 backdrop-blur-md shadow-[0_32px_64px_-15px_rgba(0,0,0,0.07)] rounded-[3rem] overflow-hidden border border-white/20 relative">
+                        <div className={`w-full max-w-5xl backdrop-blur-md rounded-[3rem] overflow-hidden border transition-all duration-500 relative
+                            ${isDark 
+                                ? "bg-slate-900/50 border-slate-800 shadow-2xl shadow-black" 
+                                : "bg-white/70 border-white/20 shadow-xl shadow-gray-200"}`}>
+                            
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
-                            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100 ">
+                            
+                            <div className={`grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x transition-colors
+                                ${isDark ? "divide-slate-800" : "divide-gray-100"}`}>
 
                                 <MDiv 
                                     whileHover={{ y: -5 }}
-                                    className="p-10 md:p-14 group transition-all duration-500 hover:bg-gradient-to-b hover:from-white hover:to-blue-50/50"
+                                    className={`p-10 md:p-14 group transition-all duration-500 
+                                        ${isDark ? "hover:bg-blue-900/10" : "hover:bg-blue-50/50"}`}
                                 >
                                     <div className="flex flex-col items-center justify-center space-y-8 transition-transform duration-500 group-hover:scale-[1.02]">
-                                        <h4 className="text-xl font-bold text-slate-800 tracking-wide transition-colors duration-300 group-hover:text-blue-600">
+                                        <h4 className={`text-xl font-bold tracking-wide transition-colors group-hover:text-blue-600
+                                            ${isDark ? "text-slate-200" : "text-slate-800"}`}>
                                             TOR Traffic
                                         </h4>
                                         <div className="w-full max-w-[260px] aspect-[4/3] flex items-center justify-center">
-                                            <PieChartWithNeedle label={'TOR'} currentValue={7500} />
+                                            <PieChartWithNeedle label={'TOR'} currentValue={7500} isDark={isDark} />
                                         </div>
                                     </div>
                                 </MDiv>
 
                                 <MDiv 
                                     whileHover={{ y: -5 }}
-                                    className="p-10 md:p-14 group transition-all duration-500 hover:bg-gradient-to-b hover:from-white hover:to-indigo-50/50"
+                                    className={`p-10 md:p-14 group transition-all duration-500 
+                                        ${isDark ? "hover:bg-indigo-900/10" : "hover:bg-indigo-50/50"}`}
                                 >
                                     <div className="flex flex-col items-center justify-center space-y-8 transition-transform duration-500 group-hover:scale-[1.02]">
-                                        <h4 className="text-xl font-bold text-slate-800 tracking-wide transition-colors duration-300 group-hover:text-indigo-600">
+                                        <h4 className={`text-xl font-bold tracking-wide transition-colors group-hover:text-indigo-600
+                                            ${isDark ? "text-slate-200" : "text-slate-800"}`}>
                                             Tunneling
                                         </h4>
                                         <div className="w-full max-w-[260px] aspect-[4/3] flex items-center justify-center">
-                                            <PieChartWithNeedle label={'Tunneling'} currentValue={10432} />
+                                            <PieChartWithNeedle label={'Tunneling'} currentValue={10432} isDark={isDark} />
                                         </div>
                                     </div>
                                 </MDiv>                            
@@ -80,7 +111,8 @@ export default async function Dashboard() {
 
                 {/* VOLUME DISTRIBUTION */}
                 <MDiv variants={itemVariants} className="w-full">
-                    <MH3 className="text-xl font-bold text-gray-500 text-center uppercase tracking-widest mb-8 ml-2">
+                    <MH3 className={`text-xl font-bold text-center uppercase tracking-widest mb-8 transition-colors
+                        ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                         Top Attackers IP Distribution
                     </MH3>
 
@@ -88,17 +120,20 @@ export default async function Dashboard() {
                         
                         <MDiv 
                             whileHover={{ y: -8 }}
-                            className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-transparent transition-all duration-500 shadow-[0_35px_70px_rgba(0,0,0,0.08)] hover:shadow-[0_45px_80px_rgba(0,0,0,0.12)] hover:border-blue-100 group relative overflow-hidden"
+                            className={`p-6 md:p-10 rounded-[2.5rem] border transition-all duration-500 group relative overflow-hidden
+                                ${isDark 
+                                    ? "bg-slate-900 border-slate-800 shadow-2xl shadow-black/50" 
+                                    : "bg-white border-transparent shadow-[0_35px_70px_rgba(0,0,0,0.08)]"}`}
                         >
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="transition-transform duration-500 group-hover:scale-[1.01] flex flex-col h-full">
                                 <div className="mb-10 relative z-10">
-                                    <h3 className="text-xl font-bold text-slate-800 ml-2 transition-colors duration-300 group-hover:text-blue-600">TOR</h3>
-                                    <p className="text-sm text-slate-500 ml-2">Top Destination IP Records</p>
+                                    <h3 className={`text-xl font-bold transition-colors group-hover:text-blue-600 ${isDark ? "text-slate-100" : "text-slate-800"}`}>TOR</h3>
+                                    <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Destination IP Records</p>
                                 </div>
                                 <div className="flex justify-center items-center pt-4">
                                     <div className="w-full max-w-[570px] h-[300px]">
-                                        <PieWithGradientTOR />
+                                        <PieWithGradientTOR isDark={isDark} />
                                     </div>
                                 </div>
                             </div>
@@ -106,17 +141,20 @@ export default async function Dashboard() {
 
                         <MDiv 
                             whileHover={{ y: -8 }}
-                            className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-transparent transition-all duration-500 shadow-[0_35px_70px_rgba(0,0,0,0.08)] hover:shadow-[0_45px_80px_rgba(0,0,0,0.12)] hover:border-indigo-100 group relative overflow-hidden"
+                            className={`p-6 md:p-10 rounded-[2.5rem] border transition-all duration-500 group relative overflow-hidden
+                                ${isDark 
+                                    ? "bg-slate-900 border-slate-800 shadow-2xl shadow-black/50" 
+                                    : "bg-white border-transparent shadow-[0_35px_70px_rgba(0,0,0,0.08)]"}`}
                         >
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="transition-transform duration-500 group-hover:scale-[1.01] flex flex-col h-full">
                                 <div className="mb-10 relative z-10">
-                                    <h3 className="text-xl font-bold text-slate-800 ml-2 transition-colors duration-300 group-hover:text-indigo-600">Tunneling</h3>
-                                    <p className="text-sm text-slate-500 ml-2">Top Destination IP Records</p>
+                                    <h3 className={`text-xl font-bold transition-colors group-hover:text-indigo-600 ${isDark ? "text-slate-100" : "text-slate-800"}`}>Tunneling</h3>
+                                    <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Destination IP Records</p>
                                 </div>
                                 <div className="flex justify-center items-center pt-4">
                                     <div className="w-full max-w-[570px] h-[300px]">
-                                        <PieWithGradientTunneling />
+                                        <PieWithGradientTunneling isDark={isDark} />
                                     </div>
                                 </div>
                             </div>
