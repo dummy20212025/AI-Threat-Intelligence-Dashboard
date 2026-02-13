@@ -56,9 +56,9 @@ export default function TopBar() {
           <motion.span
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className={`text-4xl font-black tracking-tight leading-none italic ${isDark ? "text-white" : "text-slate-900"}`}
+            className={`text-4xl font-black tracking-tight leading-none  ${isDark ? "text-white" : "text-slate-900"}`}
           >
-            GARUDA
+            C-DOT GARUDA
           </motion.span>
           <div className="flex items-center gap-2 mt-1">
             <span className="h-[2px] w-4 bg-blue-600"></span>
@@ -77,7 +77,7 @@ export default function TopBar() {
           className={`text-3xl font-extrabold tracking-tighter uppercase transition-colors
             ${isDark ? "text-slate-100" : "text-slate-800"}`}
         >
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-400">Guardian With AI - driven Real - time</span>
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-400">Guardian With AI - driven Real - time </span>
         </motion.h1>
 
         <div className="flex items-center gap-4 mt-2">

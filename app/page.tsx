@@ -1,154 +1,243 @@
 "use client";
 
-import { Activity, ShieldAlert, Zap, Search, ArrowUpRight, Shield, Lock, Cpu, Terminal as TerminalIcon } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { Activity, ShieldAlert, Zap, Search, ArrowUpRight, ShieldCheckIcon ,Radar, RadarIcon} from "lucide-react";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 
-// --- LIVE LOG COMPONENT ---
-const TelemetryTerminal = ({ activeModule, isDark }: { activeModule: string | null, isDark: boolean }) => {
-  const [logs, setLogs] = useState<string[]>(["BOOT_SEQ_COMPLETE", "ISO_27001_COMPLIANT", "READY"]);
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const timestamp = new Date().toLocaleTimeString('en-GB', { hour12: false });
-      let newLog = `[${timestamp}] SCANNING_PORT_${Math.floor(Math.random()*65535)}`;
-      if (activeModule) newLog = `[${timestamp}] [${activeModule}] INTERCEPT_ACTIVE`;
-      setLogs(prev => [...prev.slice(-12), newLog]);
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [activeModule]);
+// --- NEURAL MOTION BACKGROUND ---
+const NeuralBackground = ({ isHovered }: { isHovered: boolean }) => {
+const { theme } = useTheme();
+const canvasRef = useRef<HTMLCanvasElement>(null);
+const speed = useRef(1);
+const isDark = theme === "dark";
 
-  return (
-    <div className={`hidden xl:flex flex-col w-72 border-l p-6 font-mono text-[10px] backdrop-blur-md transition-colors duration-500
-      ${isDark ? "bg-slate-950/80 border-blue-900/30 text-slate-500" : "bg-slate-50/80 border-slate-200 text-slate-400"}`}>
-      <div className={`flex items-center gap-2 mb-4 border-b pb-2 ${isDark ? "text-blue-500 border-blue-900/50" : "text-blue-600 border-slate-200"}`}>
-        <TerminalIcon size={14} />
-        <span className="font-bold tracking-widest uppercase">Telemetry</span>
-      </div>
-      <div className="flex-1 overflow-hidden space-y-2">
-        {logs.map((log, i) => (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={i} className={log.includes('ACTIVE') ? 'text-blue-500 font-bold' : ''}>
-            {log}
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
+useEffect(() => {
+const canvas = canvasRef.current;
+if (!canvas) return;
+const ctx = canvas.getContext("2d");
+if (!ctx) return;
+
+let particles: any[] = [];
+let animationFrameId: number;
+
+const resize = () => {
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 };
 
-export default function PerimeterDashboard() {
-  const { theme } = useTheme();
-  const [activeIdx, setActiveIdx] = useState<number | null>(null);
-  const [mounted, setMounted] = useState(false);
+class Particle {
+x: number; y: number; vx: number; vy: number; size: number;
+constructor() {
+this.x = Math.random() * canvas.width;
+this.y = Math.random() * canvas.height;
+// Neuronal drift speed
+this.vx = (Math.random() - 0.5) * 0.4;
+this.vy = (Math.random() - 0.5) * 0.4;
+this.size = Math.random() * 2 + 0.5;
+}
+update() {
+const targetSpeed = isHovered ? 3.5 : 1;
+speed.current = speed.current + (targetSpeed - speed.current) * 0.05;
+this.x += this.vx * speed.current;
+this.y += this.vy * speed.current;
 
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
+// Wrap around screen for continuous motion
+if (this.x < 0) this.x = canvas.width;
+if (this.x > canvas.width) this.x = 0;
+if (this.y < 0) this.y = canvas.height;
+if (this.y > canvas.height) this.y = 0;
+}
+draw() {
+ctx!.beginPath();
+ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+ctx!.fillStyle = isDark 
+? (isHovered ? "rgba(59, 130, 246, 0.8)" : "rgba(100, 200, 255, 0.4)")
+: (isHovered ? "rgba(37, 99, 235, 0.5)" : "rgba(148, 163, 184, 0.3)");
+ctx!.fill();
+}
+}
 
-  const isDark = theme === "dark";
-  const categories = [
-    { title: "Cyber Radar", id: "ACR-01", icon: <Activity />, desc: "An exclusive cyber threat intelligence service that delivers real-time, curated, and actionable cyber threat insights that can be used in network security solutions.", color: "#3b82f6" },
-    { title: "Tunnel Hunter", id: "ATH-02", icon: <Zap />, desc: "Stealth detection.", color: "#f59e0b" },
-    { title: "Phishing Shield", id: "AZP-03", icon: <ShieldAlert />, desc: "Visual AI protection.", color: "#10b981" },
-    { title: "Recon Shield", id: "ARS-04", icon: <Search />, desc: "Anomaly exposure.", color: "#a855f7" },
-  ];
+const init = () => {
+particles = Array.from({ length: 90 }, () => new Particle());
+};
 
-  const pulseColor = activeIdx === null ? "#3b82f6" : categories[activeIdx].color;
+const drawLines = () => {
+for (let i = 0; i < particles.length; i++) {
+for (let j = i + 1; j < particles.length; j++) {
+const dx = particles[i].x - particles[j].x;
+const dy = particles[i].y - particles[j].y;
+const distance = Math.sqrt(dx * dx + dy * dy);
+if (distance < 170) {
+ctx!.beginPath();
+const opacity = (1 - distance / 170) * (isHovered ? 0.7 : 0.25);
+ctx!.strokeStyle = isDark 
+? `rgba(59, 130, 246, ${opacity})`
+: `rgba(37, 99, 235, ${opacity})`;
+ctx!.lineWidth = isHovered ? 1.2 : 0.6;
+ctx!.moveTo(particles[i].x, particles[i].y);
+ctx!.lineTo(particles[j].x, particles[j].y);
+ctx!.stroke();
+}
+}
+}
+};
 
-  return (
-    <div className={`relative h-full w-full flex overflow-hidden transition-colors duration-700
-      ${isDark ? "bg-[#020617] text-slate-200" : "bg-white text-slate-900"}`}>
-      
-      {/* --- CIRCUIT PERIMETER (Lines around the cards) --- */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-        <defs>
-          <filter id="neon">
-            <feGaussianBlur stdDeviation="2" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
-        
-        {/* Main Orbiting Path around the 4-card area */}
-        <rect x="5%" y="45%" width="90%" height="45%" rx="40" stroke={isDark ? "#1e293b" : "#e2e8f0"} strokeWidth="1" fill="none" />
-        
-        {/* Animated Perimeter Pulse */}
-        <motion.rect
-          x="5%" y="45%" width="90%" height="45%" rx="40"
-          stroke={pulseColor}
-          strokeWidth="3"
-          fill="none"
-          strokeDasharray="100 1000"
-          filter="url(#neon)"
-          animate={{ strokeDashoffset: [1100, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-        />
-      </svg>
+const animate = () => {
+ctx.fillStyle = isDark ? "#020617" : "#ffffff";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+const gradient = ctx.createRadialGradient(
+canvas.width / 2, canvas.height / 2, 0,
+canvas.width / 2, canvas.height / 2, canvas.width / 1.5
+);
+if (isDark) {
+gradient.addColorStop(0, isHovered ? "rgba(30, 64, 175, 0.25)" : "rgba(30, 58, 138, 0.1)");
+gradient.addColorStop(1, "rgba(2, 6, 23, 0)");
+} else {
+gradient.addColorStop(0, isHovered ? "rgba(219, 234, 254, 0.5)" : "rgba(241, 245, 249, 0.3)");
+gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+}
+ctx.fillStyle = gradient;
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+particles.forEach(p => { p.update(); p.draw(); });
+drawLines();
+animationFrameId = requestAnimationFrame(animate);
+};
 
-      {/* --- GHOST BACKGROUND ASSETS --- */}
-      <div className="absolute inset-0 pointer-events-none z-0 opacity-10">
-        <motion.div animate={{ rotate: [0, 5, 0] }} transition={{ duration: 20, repeat: Infinity }} className="absolute -top-20 -left-20">
-          <Shield size={600} strokeWidth={0.5} className={isDark ? "text-blue-500" : "text-blue-300"} />
-        </motion.div>
-        <motion.div animate={{ rotate: [0, -5, 0] }} transition={{ duration: 25, repeat: Infinity }} className="absolute -bottom-20 right-20">
-          <Lock size={500} strokeWidth={0.5} className={isDark ? "text-blue-400" : "text-blue-300"} />
-        </motion.div>
-      </div>
+window.addEventListener("resize", resize);
+resize(); init(); animate();
+return () => {
+window.removeEventListener("resize", resize);
+cancelAnimationFrame(animationFrameId);
+};
+}, [isHovered, isDark]);
 
-      {/* --- CONTENT AREA --- */}
-      <div className="relative flex-1 flex flex-col p-12 z-10">
-        
-        <header className="mb-16 flex items-center gap-6">
-          <div className={`p-4 rounded-2xl border transition-colors ${isDark ? "bg-blue-600/10 border-blue-500/20" : "bg-blue-50 border-blue-100"}`}>
-            <Cpu className="text-blue-600" size={40} />
-          </div>
-          <div>
-            <h1 className={`text-7xl font-black italic tracking-tighter ${isDark ? "text-white" : "text-slate-900"}`}>GARUDA</h1>
-            <p className="text-blue-600 font-mono text-[10px] tracking-[0.6em] uppercase font-bold">Secure Defense Infrastructure</p>
-          </div>
-        </header>
+return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none transition-colors duration-700" />;
+};
 
-        {/* --- GRID OF CARDS --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-center flex-1">
-          {categories.map((item, idx) => (
-            <motion.div
-              key={item.id}
-              onMouseEnter={() => setActiveIdx(idx)}
-              onMouseLeave={() => setActiveIdx(null)}
-              className={`group relative p-8 h-72 rounded-3xl border-2 transition-all duration-500 flex flex-col justify-between overflow-hidden
-                ${isDark 
-                  ? (activeIdx === idx ? 'bg-slate-900 border-blue-500 -translate-y-4' : 'bg-slate-950/40 border-slate-800') 
-                  : (activeIdx === idx ? 'bg-white border-blue-500 -translate-y-4 shadow-2xl shadow-blue-100' : 'bg-slate-50 border-slate-200')}`}
-            >
-              <div className="relative z-10">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-colors
-                  ${isDark ? "bg-slate-800" : "bg-white border border-slate-200"}`}
-                  style={{ color: activeIdx === idx ? item.color : '#94a3b8' }}>
-                  {item.icon}
-                </div>
-                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{item.id}</span>
-                <h3 className={`text-xl font-black italic uppercase mt-1 ${isDark ? "text-white" : "text-slate-800"}`}>{item.title}</h3>
-                <p className={`text-xs mt-2 font-medium ${isDark ? "text-slate-500" : "text-slate-400"}`}>{item.desc}</p>
-              </div>
-              <ArrowUpRight className={`self-end transition-colors ${activeIdx === idx ? 'text-blue-500' : 'text-slate-300'}`} />
-            </motion.div>
-          ))}
-        </div>
+export default function DashboardPage() {
+const { theme } = useTheme();
+const [isHovered, setIsHovered] = useState(false);
+const [mounted, setMounted] = useState(false);
 
-        <footer className={`mt-auto pt-8 border-t flex justify-between text-[10px] font-mono tracking-widest uppercase
-          ${isDark ? "border-slate-900 text-slate-700" : "border-slate-100 text-slate-400"}`}>
-          <div className="flex gap-10">
-            <span className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full bg-blue-500 ${activeIdx !== null ? 'animate-ping' : ''}`} />
-              System_Live
-            </span>
-            <span>Encryption: AES-256</span>
-          </div>
-          <p>© 2026 C-DOT Intelligence</p>
-        </footer>
-      </div>
+// Parallax Values
+const mouseX = useMotionValue(0);
+const mouseY = useMotionValue(0);
+const springX = useSpring(mouseX, { stiffness: 100, damping: 30 });
+const springY = useSpring(mouseY, { stiffness: 100, damping: 30 });
+const rotateX = useTransform(springY, [-500, 500], [5, -5]);
+const rotateY = useTransform(springX, [-500, 500], [-5, 5]);
 
-      {/* --- TELEMETRY --- */}
-      <TelemetryTerminal activeModule={activeIdx !== null ? categories[activeIdx].id : null} isDark={isDark} />
-    </div>
-  );
+useEffect(() => setMounted(true), []);
+if (!mounted) return null;
+
+const isDark = theme === "dark";
+
+const handleMouseMove = (e: React.MouseEvent) => {
+const rect = e.currentTarget.getBoundingClientRect();
+const x = e.clientX - (rect.left + rect.width / 2);
+const y = e.clientY - (rect.top + rect.height / 2);
+mouseX.set(x);
+mouseY.set(y);
+};
+
+const categories = [
+{ title: "Cyber Radar", subtitle: "AI-powered Cyber Radar (ACR) ", description: "An exclusive cyber threat intelligence service that delivers real-time, curated, and actionable cyber threat insights that can be used in network security solutions. ", icon: <RadarIcon className="w-6 h-6" />, color: "text-blue-500", href: "/dashboard/acr" },
+{ title: "Tunnel Hunter", subtitle: "AI-driven Tunnel Hunter (ATH)", description: " An advanced AI-driven network visibility solution that helps ISPs/Enterprises/LEAs to detect TOR connections, VPN tunnels and DNS tunneling activity in real time.", icon: <Zap className="w-6 h-6" />, color: "text-amber-500", href: "/dashboard/ath" },
+{ title: "Zero Day Phishing", subtitle: "AI-enabled Zero Day Phishing (AZP)", description: "A real-time phishing detection solution that accurately identifies phishing domains of critical institutions the moment they go live, powered by expert-crafted detection logic and Visual AI. ", icon: <ShieldAlert className="w-6 h-6" />, color: "text-emerald-500", href: "/dashboard/azp" },
+{ title: "Recon Shield", subtitle: "AI-based Recon Shield (ARS)", description: "A proactive AI-based network intelligence solution for enterprises that delivers real-time detection of anomalous traffic including scanning acitvities to expose threats before exploitation begins.", icon: <ShieldCheckIcon className="w-6 h-6" />, color: "text-purple-500", href: "/dashboard/ars" },
+];
+
+return (
+<div 
+onMouseMove={handleMouseMove}
+className={`relative min-h-[calc(100vh-96px)] flex flex-col items-center pt-16 pb-12 px-6 overflow-hidden transition-all duration-700
+${isDark ? "bg-slate-950 text-white" : "bg-white text-slate-900"}`}
+>
+<NeuralBackground isHovered={isHovered} />
+
+{/* --- PARALLAX CENTRAL HEADER --- */}
+<motion.div 
+style={{ rotateX, rotateY, perspective: 1000 }}
+className="relative z-10 w-full max-w-[1440px] mb-20 text-center pointer-events-none"
+>
+<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }}>
+<h2 className={`text-7xl md:text-9xl font-black tracking-tighter  mb-4 transition-colors duration-700 drop-shadow-2xl
+${isDark ? "text-white" : "text-slate-950"}`}>
+CDOT-GARUDA
+</h2>
+<div className="flex items-center justify-center gap-4">
+<motion.div initial={{ width: 0 }} animate={{ width: 48 }} className="h-[2px] bg-blue-600" />
+<p className="text-sm md:text-base font-extrabold uppercase tracking-[0.6em] text-blue-500 whitespace-nowrap">
+GUARDIAN WITH AI DRIVEN REAL TIME ULTRA DATA ANALYTICS
+</p>
+<motion.div initial={{ width: 0 }} animate={{ width: 48 }} className="h-[2px] bg-blue-600" />
+</div>
+</motion.div>
+</motion.div>
+
+{/* --- CARDS GRID --- */}
+<div className="relative z-10 w-full max-w-[1440px]">
+<div 
+className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4"
+onMouseEnter={() => setIsHovered(true)}
+onMouseLeave={() => setIsHovered(false)}
+>
+{categories.map((item, idx) => (
+<Link key={item.subtitle} href={item.href} className="group flex">
+<motion.div 
+initial={{ opacity: 0, y: 30 }}
+animate={{ opacity: 1, y: 0 }}
+transition={{ delay: idx * 0.1, duration: 0.6 }}
+className={`relative flex-1 flex flex-col p-8 rounded-[2rem] border-2 transition-all duration-500 
+${isDark 
+? "bg-slate-900/60 border-blue-900/20 backdrop-blur-xl group-hover:border-blue-500/50 group-hover:bg-slate-900/90 shadow-[0_8px_32px_rgba(0,0,0,0.3)]" 
+: "bg-gray-50/80 border-gray-200 backdrop-blur-md group-hover:border-blue-400 group-hover:bg-white group-hover:shadow-2xl shadow-gray-200"
+}`}
+>
+<div className="flex justify-between items-center mb-12">
+<div className={`p-4 rounded-2xl transition-all duration-500 shadow-sm border-2 
+${isDark ? "bg-slate-800/80 border-slate-700 group-hover:bg-blue-600 group-hover:text-white" : "bg-white border-gray-100 group-hover:bg-blue-500 group-hover:text-white"}`}>
+<div className={item.color}>{item.icon}</div>
+</div>
+<AnimatePresence>
+{isHovered && (
+<motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
+<span className="text-[9px] font-mono text-blue-500 font-bold tracking-tighter animate-pulse">SYSTEM_SCAN</span>
+<ArrowUpRight className={`w-5 h-5 ${isDark ? "text-slate-600" : "text-slate-400"} group-hover:text-blue-500`} />
+</motion.div>
+)}
+</AnimatePresence>
+</div>
+<div className="mt-auto">
+<span className="text-[11px] font-mono text-blue-500 font-extrabold tracking-[0.2em] uppercase mb-3 block italic">
+{item.subtitle}
+</span>
+<h3 className="text-2xl font-black mb-4 tracking-tight transition-colors group-hover:text-blue-600">
+{item.title}
+</h3>
+<p className={`text-sm leading-relaxed min-h-[64px] font-semibold transition-colors ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+{item.description}
+</p>
+</div>
+</motion.div>
+</Link>
+))}
+</div>
+
+<footer className={`mt-24 flex justify-between items-center font-mono text-[10px] tracking-[0.3em] px-10 transition-colors ${isDark ? "text-slate-700" : "text-slate-400"}`}>
+<div className="flex items-center gap-3">
+<span className={`w-2 h-2 rounded-full ${isHovered ? 'bg-blue-500 animate-ping' : 'bg-blue-600/30'} transition-all`} />
+</div>
+<div className="flex items-center gap-4">
+<span className="opacity-50"></span>
+<span className="h-4 w-[1px] bg-current opacity-20" />
+<span>© 2026 C-DOT Defense Intelligence</span>
+</div>
+</footer>
+</div>
+</div>
+);
+
 }
