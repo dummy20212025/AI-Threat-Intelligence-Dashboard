@@ -3,7 +3,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Papa from 'papaparse';
 import { useTheme } from "next-themes";
 import {
-    Calendar,
     Database,
     Filter,
     Loader2,
@@ -12,20 +11,21 @@ import {
     RefreshCcw,
     ShieldAlert,
     Clock,
-    Radar
+    SearchX // Added for empty results state
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Animation Wrappers (Reusing your standard variants)
-import { MDiv, itemVariants, containerVariants } from "@/components/framer/MotionWrappers";
+import { itemVariants, containerVariants } from "@/components/framer/MotionWrappers";
 
-export default function ReconShieldPage() {
+export default function Page() {
     const { theme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     const [data, setData] = useState<any[]>([]);
     const [headers, setHeaders] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [hasQueried, setHasQueried] = useState(false); // Track if a query has been completed
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [quickRange, setQuickRange] = useState("");
@@ -55,6 +55,7 @@ export default function ReconShieldPage() {
         setEndDate("");
         setQuickRange("");
         setData([]);
+        setHasQueried(false);
     };
 
     const fetchData = async () => {
@@ -74,16 +75,29 @@ export default function ReconShieldPage() {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
-                    if (results.data.length > 0) {
-                        setHeaders(Object.keys(results.data[0] as Record<string, any>));
-                        setData(results.data as any[]);
+                    // Check if data exists and isn't just an empty row
+                    if (results.data && results.data.length > 0) {
+                        const rawData = results.data as any[];
+                        const firstRowValues = Object.values(rawData[0]).filter(v => v !== "" && v !== null);
+                        
+                        if (firstRowValues.length > 0) {
+                            setHeaders(Object.keys(rawData[0]));
+                            setData(rawData);
+                        } else {
+                            setData([]);
+                        }
+                    } else {
+                        setData([]);
                     }
+                    setHasQueried(true); // Confirmation that processing finished
+                    setLoading(false);
                     setCurrentPage(1);
                 },
             });
         } catch (error) {
-            console.error("Error fetching port scan data:", error);
-        } finally {
+            console.error("Error fetching anomaly data:", error);
+            setData([]);
+            setHasQueried(true);
             setLoading(false);
         }
     };
@@ -162,7 +176,7 @@ export default function ReconShieldPage() {
                 <div className="flex flex-col gap-3">
                     <label className={`text-[10px] font-bold uppercase ml-2 flex items-center gap-2
                         ${isDark ? "text-slate-500" : "text-gray-400"}`}>
-                        <Filter size={12} /> Scanning Presets
+                        <Filter size={12} /> Presets
                     </label>
                     <div className={`p-1.5 rounded-2xl ${isDark ? "bg-slate-800" : "bg-gray-50"}`}>
                         {[1, 5, 15, 30].map((days) => (
@@ -191,7 +205,7 @@ export default function ReconShieldPage() {
                             : "bg-purple-600 shadow-purple-200 hover:bg-purple-700"}`}
                 >
                     {loading ? <Loader2 className="animate-spin" size={20} /> : <Database size={20} />}
-                    {loading ? "Scanning Logs..." : "Pull Records"}
+                    {loading ? "Analyzing..." : "Pull Records"}
                 </motion.button>
             </motion.div>
 
@@ -203,9 +217,22 @@ export default function ReconShieldPage() {
                         ? "bg-slate-900 border-slate-800 shadow-2xl shadow-black/60" 
                         : "bg-white border-gray-100 shadow-[0_35px_70px_rgba(0,0,0,0.05)]"}`}
             >
-                <div className="overflow-x-auto flex-1">
+                <div className="overflow-x-auto flex-1 flex flex-col">
                     <AnimatePresence mode='wait'>
-                        {data.length > 0 ? (
+                        {loading ? (
+                            <motion.div 
+                                key="loading" 
+                                initial={{ opacity: 0 }} 
+                                animate={{ opacity: 1 }} 
+                                exit={{ opacity: 0 }} 
+                                className="flex-1 flex flex-col items-center justify-center gap-4"
+                            >
+                                <Loader2 className="animate-spin text-purple-500" size={40} />
+                                <p className={`text-sm font-bold animate-pulse ${isDark ? "text-slate-400" : "text-gray-500"}`}>
+                                    Processing Anomaly Data...
+                                </p>
+                            </motion.div>
+                        ) : data.length > 0 ? (
                             <motion.table 
                                 key="table"
                                 initial={{ opacity: 0 }}
@@ -250,14 +277,20 @@ export default function ReconShieldPage() {
                                 key="empty"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="h-[500px] flex flex-col items-center justify-center gap-5"
+                                className="flex-1 flex flex-col items-center justify-center gap-5 p-10"
                             >
                                 <div className={`p-8 rounded-full ${isDark ? "bg-purple-900/20 text-purple-400" : "bg-purple-50 text-purple-200"}`}>
-                                    <ShieldAlert size={48} strokeWidth={1.5} />
+                                    {hasQueried ? <SearchX size={48} /> : <ShieldAlert size={48} />}
                                 </div>
-                                <div className="text-center">
-                                    <p className={`font-black text-lg uppercase tracking-tight ${isDark ? "text-slate-200" : "text-gray-800"}`}>SYSTEM READY</p>
-                                    <p className={`text-sm ${isDark ? "text-slate-500" : "text-gray-400"}`}>Select a date range and click "Pull Records" to query Elasticsearch.</p>
+                                <div className="text-center max-w-xs">
+                                    <p className={`font-black text-lg uppercase tracking-tight ${isDark ? "text-slate-200" : "text-gray-800"}`}>
+                                        {hasQueried ? "Nothing Is There" : "SYSTEM READY"}
+                                    </p>
+                                    <p className={`text-sm mt-2 ${isDark ? "text-slate-500" : "text-gray-400"}`}>
+                                        {hasQueried 
+                                            ? "No anomalies were detected for the chosen parameters in the database." 
+                                            : "Select a date range and click 'Pull Records' to query the anomaly detection logs."}
+                                    </p>
                                 </div>
                             </motion.div>
                         )}
@@ -275,7 +308,7 @@ export default function ReconShieldPage() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all disabled:opacity-30
+                                className={`flex items-center gap-2 px-6 py-2 rounded-xl border text-xs font-bold transition-all disabled:opacity-30
                                     ${isDark 
                                         ? "border-slate-800 text-slate-400 hover:bg-slate-800" 
                                         : "border-gray-100 text-gray-500 hover:bg-gray-50"}`}
@@ -285,7 +318,7 @@ export default function ReconShieldPage() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all disabled:opacity-30
+                                className={`flex items-center gap-2 px-6 py-2 rounded-xl border text-xs font-bold transition-all disabled:opacity-30
                                     ${isDark 
                                         ? "border-slate-800 text-slate-400 hover:bg-slate-800" 
                                         : "border-gray-100 text-gray-500 hover:bg-gray-50"}`}
