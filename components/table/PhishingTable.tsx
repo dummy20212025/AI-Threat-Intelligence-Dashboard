@@ -15,33 +15,40 @@ export default function PhishingTable({ isDark }: PhishingTableProps) {
       'maharashtra.gov.in.studentemarks.in': '/maharashtra.gov.in.studentemarks.in.jpg',
       'rajasthanstateopenschool.com': '/rajasthanstateopenschool.com.jpg',
       'rsos.rajasthan-gov.net': '/rsos.rajasthan-gov.net.jpg',
+      'mvahangov.com': '/mvahangov.com.png',
+      'rrbresultgovt.com': '/rrbresultgovt.com.png',
+
+
+
     };
     return images[domain] ?? null;
   };
 
   const domains = [
-    'dc.crsorgi.gov.in.index.web-index.info', 
+    'dc.crsorgi.gov.in.index.web-index.info',
     'dcc.crsorgi.gov.in.crsor.in',
     'maharashtra.gov.in.studentemarks.in',
     'rajasthanstateopenschool.com',
-    'rsos.rajasthan-gov.net'
+    'rsos.rajasthan-gov.net',
+    'mvahangov.com',
+    'rrbresultgovt.com'
   ];
 
   return (
     <div className="w-full flex flex-col items-center">
       {/* --- TABLE CARD --- */}
       <div className={`w-full max-w-2xl p-6 md:p-10 rounded-[2.5rem] transition-all duration-500 border group
-        ${isDark 
-          ? "bg-slate-900 border-slate-800 shadow-2xl shadow-black/50 hover:shadow-emerald-900/10" 
+        ${isDark
+          ? "bg-slate-900 border-slate-800 shadow-2xl shadow-black/50 hover:shadow-emerald-900/10"
           : "bg-white border-transparent shadow-[0_35px_70px_rgba(0,0,0,0.08)] hover:shadow-[0_45px_80px_rgba(0,0,0,0.12)] hover:-translate-y-2"}`}>
-        
+
         <div className="overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className={`border-b ${isDark ? "border-slate-800" : "border-gray-100"}`}>
                 <th className={`pb-4 text-[13px] font-bold uppercase tracking-[0.2em] 
                   ${isDark ? "text-slate-500" : "text-gray-400"}`}>
-                  Target Domain
+                  Active Phishing Domains
                 </th>
               </tr>
             </thead>

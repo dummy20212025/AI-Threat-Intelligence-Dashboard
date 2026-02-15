@@ -205,7 +205,7 @@ export default function Page() {
                             : "bg-purple-600 shadow-purple-200 hover:bg-purple-700"}`}
                 >
                     {loading ? <Loader2 className="animate-spin" size={20} /> : <Database size={20} />}
-                    {loading ? "Analyzing..." : "Pull Records"}
+                    {loading ? "Fetching Logs..." : "Pull Records"}
                 </motion.button>
             </motion.div>
 
@@ -288,8 +288,8 @@ export default function Page() {
                                     </p>
                                     <p className={`text-sm mt-2 ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                                         {hasQueried 
-                                            ? "No anomalies were detected for the chosen parameters in the database." 
-                                            : "Select a date range and click 'Pull Records' to query the anomaly detection logs."}
+                                            ? "The database returned no matching records after processing your request." 
+                                            : "Select a date range and click 'Pull Records' to query ElasticSearch."}
                                     </p>
                                 </div>
                             </motion.div>

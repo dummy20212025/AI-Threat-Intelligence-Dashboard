@@ -206,7 +206,7 @@ export default function Page() {
                             : "bg-purple-600 shadow-purple-200 hover:bg-purple-700"}`}
                 >
                     {loading ? <Loader2 className="animate-spin" size={20} /> : <Database size={20} />}
-                    {loading ? "Scanning Logs..." : "Pull Records"}
+                    {loading ? "Fetching Logs..." : "Pull Records"}
                 </motion.button>
             </motion.div>
 
@@ -224,7 +224,7 @@ export default function Page() {
                             <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col items-center justify-center gap-4">
                                 <Loader2 className="animate-spin text-purple-500" size={40} />
                                 <p className={`text-sm font-bold animate-pulse ${isDark ? "text-slate-400" : "text-gray-500"}`}>
-                                    Processing Logs...
+                                    Processing Port Scan Data...
                                 </p>
                             </motion.div>
                         ) : data.length > 0 ? (
@@ -283,7 +283,7 @@ export default function Page() {
                                     </p>
                                     <p className={`text-sm mt-1 ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                                         {hasQueried 
-                                            ? "The database returned no scanning activities for the selected time range." 
+                                            ? "The database returned no matching records after processing your request." 
                                             : "Select a date range and click 'Pull Records' to query Elasticsearch."}
                                     </p>
                                 </div>

@@ -52,7 +52,7 @@ export default function ACR() {
                 <MDiv variants={itemVariants} className="w-full">
                     <MH3 className={`text-xl font-bold text-center uppercase tracking-widest mb-6 transition-colors
                         ${isDark ? "text-slate-500" : "text-gray-400"}`}>
-                        Real-time Gauges
+                        Real-time Event Level
                     </MH3>
 
                     <div className="w-full flex justify-center py-10 px-4">
@@ -79,7 +79,7 @@ export default function ACR() {
                                         </h4>
                                         <div className="w-full max-w-[260px] aspect-[4/3] flex items-center justify-center">
                                             {/* Pass isDark to chart component */}
-                                            <PieChartWithNeedle label={'Anomaly'} currentValue={12500} isDark={isDark} />
+                                            <PieChartWithNeedle label={'Anomaly'} currentValue={12500}  />
                                         </div>
                                     </div>
                                 </MDiv>
@@ -96,7 +96,7 @@ export default function ACR() {
                                             PortScan
                                         </h4>
                                         <div className="w-full max-w-[260px] aspect-[4/3] flex items-center justify-center">
-                                            <PieChartWithNeedle label={'PORT SCAN'} currentValue={18550} isDark={isDark} />
+                                            <PieChartWithNeedle label={'PORT SCAN'} currentValue={18550}  />
                                         </div>
                                     </div>
                                 </MDiv>
@@ -125,7 +125,7 @@ export default function ACR() {
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="mb-10 relative z-10">
                                 <h3 className={`text-xl font-bold transition-colors group-hover:text-blue-500 ${isDark ? "text-slate-100" : "text-slate-800"}`}>Anomaly</h3>
-                                <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Destination IP Records</p>
+                                <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Attacker IPs</p>
                             </div>
                             <div className="flex justify-center items-center h-[300px]">
                                 <PieWithGradient/>
@@ -143,7 +143,7 @@ export default function ACR() {
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="mb-10 relative z-10">
                                 <h3 className={`text-xl font-bold transition-colors group-hover:text-indigo-500 ${isDark ? "text-slate-100" : "text-slate-800"}`}>Port Scan</h3>
-                                <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Destination IP Records</p>
+                                <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Attacker IPs</p>
                             </div>
                             <div className="flex justify-center items-center h-[300px]">
                                 <PieWithGradientPortScan />

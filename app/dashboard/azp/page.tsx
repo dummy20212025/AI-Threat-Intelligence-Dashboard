@@ -150,14 +150,6 @@ export default function Page() {
                     <div className={`h-1.5 w-48 mx-auto mt-4 rounded-full ${isDark ? "bg-emerald-500" : "bg-blue-600"}`} />
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-4">
-                    <button onClick={() => handleDownload('threat_intel_DB_ips.csv')} className="flex items-center gap-3 bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg">
-                        <Download size={18} /> Download Malicious IPs
-                    </button>
-                    <button onClick={() => handleDownload('threat_intel_DB_domains.csv')} className="flex items-center gap-3 bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg">
-                        <Download size={18} /> Download Malicious Domains
-                    </button>
-                </div>
             </div>
 
             {/* 2. GAUGE & ACTIVE PHISHINGS */}
@@ -165,10 +157,10 @@ export default function Page() {
                 <div className={`flex-1 min-h-[480px] rounded-[2.5rem] p-10 border flex flex-col items-center justify-center transition-all 
                         ${isDark ? "bg-slate-900/50 border-slate-800 shadow-2xl" : "bg-white border-white shadow-xl"}`}>
                     <h3 className={`text-xs font-black uppercase tracking-[0.4em] mb-12 ${isDark ? "text-slate-500" : "text-gray-400"}`}>
-                        Real-time Risk Level
+                        Real-time Event Level
                     </h3>
                     <div className="w-full max-w-[320px]">
-                        <PieChartWithNeedlePhishing label={'Risk Index'} currentValue={59} isDark={isDark} />
+                        <PieChartWithNeedlePhishing label={'Risk Index'} currentValue={59} />
                     </div>
                 </div>
 
@@ -203,7 +195,7 @@ export default function Page() {
 
                 <button onClick={fetchData} disabled={loading || (!quickRange && !startDate)} className="ml-auto flex items-center gap-3 px-10 py-4 rounded-[1.5rem] bg-blue-600 text-white font-bold disabled:opacity-50">
                     {loading ? <Loader2 className="animate-spin" size={20} /> : <Database size={20} />}
-                    {loading ? "Fetching..." : "Pull Records"}
+                    {loading ? "Fetching Logs..." : "Pull Records"}
                 </button>
             </div>
 
@@ -215,7 +207,7 @@ export default function Page() {
                         {loading ? (
                             <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col items-center justify-center gap-4">
                                 <Loader2 className="animate-spin text-blue-500" size={40} />
-                                <p className="text-sm font-bold text-gray-400 animate-pulse">Processing CSV Data...</p>
+                                <p className="text-sm font-bold text-gray-400 animate-pulse">Processing Phishing Data...</p>
                             </motion.div>
                         ) : data.length > 0 ? (
                             <motion.table key="table" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full text-left">
@@ -246,7 +238,7 @@ export default function Page() {
                                         {hasQueried ? "Nothing Is There" : "System Ready"}
                                     </p>
                                     <p className="text-sm text-gray-400 max-w-xs mx-auto">
-                                        {hasQueried ? "The database returned no matching records after processing your request." : "Select a time range to pull cyber logs from the database."}
+                                        {hasQueried ? "The database returned no matching records after processing your request." : "Select a date range and click Pull Records to query Elasticsearch.."}
                                     </p>
                                 </div>
                             </motion.div>

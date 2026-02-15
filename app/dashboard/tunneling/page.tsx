@@ -192,7 +192,7 @@ export default function Page() {
                                 ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20"
                                 : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200"}`}
                     >
-                        {isLoading ? "Fetching..." : "Get Data"}
+                        {isLoading ? "Fetching Logs..." : "Get Data"}
                     </button>
                 </MDiv>
 

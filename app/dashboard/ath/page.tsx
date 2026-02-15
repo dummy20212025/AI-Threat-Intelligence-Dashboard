@@ -58,7 +58,7 @@ export default function Dashboard() {
                 <MDiv variants={itemVariants} className="w-full">
                     <MH3 className={`text-xl font-bold text-center uppercase tracking-widest mb-6 transition-colors
                         ${isDark ? "text-slate-500" : "text-gray-400"}`}>
-                        Real-time Gauges
+                        Real-time Event Level
                     </MH3>
 
                     <div className="w-full flex justify-center py-10 px-4">
@@ -83,7 +83,7 @@ export default function Dashboard() {
                                             TOR Traffic
                                         </h4>
                                         <div className="w-full max-w-[260px] aspect-[4/3] flex items-center justify-center">
-                                            <PieChartWithNeedle label={'TOR'} currentValue={7500} isDark={isDark} />
+                                            <PieChartWithNeedle label={'TOR'} currentValue={7500} />
                                         </div>
                                     </div>
                                 </MDiv>
@@ -99,7 +99,7 @@ export default function Dashboard() {
                                             Tunneling
                                         </h4>
                                         <div className="w-full max-w-[260px] aspect-[4/3] flex items-center justify-center">
-                                            <PieChartWithNeedle label={'Tunneling'} currentValue={10432} isDark={isDark} />
+                                            <PieChartWithNeedle label={'Tunneling'} currentValue={10432}  />
                                         </div>
                                     </div>
                                 </MDiv>                            
@@ -129,11 +129,11 @@ export default function Dashboard() {
                             <div className="transition-transform duration-500 group-hover:scale-[1.01] flex flex-col h-full">
                                 <div className="mb-10 relative z-10">
                                     <h3 className={`text-xl font-bold transition-colors group-hover:text-blue-600 ${isDark ? "text-slate-100" : "text-slate-800"}`}>TOR</h3>
-                                    <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Destination IP Records</p>
+                                    <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Attacker IPs</p>
                                 </div>
                                 <div className="flex justify-center items-center pt-4">
                                     <div className="w-full max-w-[570px] h-[300px]">
-                                        <PieWithGradientTOR isDark={isDark} />
+                                        <PieWithGradientTOR/>
                                     </div>
                                 </div>
                             </div>
@@ -150,11 +150,11 @@ export default function Dashboard() {
                             <div className="transition-transform duration-500 group-hover:scale-[1.01] flex flex-col h-full">
                                 <div className="mb-10 relative z-10">
                                     <h3 className={`text-xl font-bold transition-colors group-hover:text-indigo-600 ${isDark ? "text-slate-100" : "text-slate-800"}`}>Tunneling</h3>
-                                    <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Destination IP Records</p>
+                                    <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>Top Attacker IPs</p>
                                 </div>
                                 <div className="flex justify-center items-center pt-4">
                                     <div className="w-full max-w-[570px] h-[300px]">
-                                        <PieWithGradientTunneling isDark={isDark} />
+                                        <PieWithGradientTunneling  />
                                     </div>
                                 </div>
                             </div>

@@ -115,7 +115,6 @@ export default function Page() {
             variants={containerVariants}
             className="flex flex-col gap-8 w-full max-w-[1600px] mx-auto p-6 md:p-10 bg-gray-50 min-h-screen"
         >
-            {/* ... [Header, Gauges, Control Panel remain same] ... */}
             
             {/* DATA TABLE WRAPPER */}
             <motion.div
