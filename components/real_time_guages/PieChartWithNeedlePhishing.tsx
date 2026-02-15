@@ -3,9 +3,9 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const GAUGE_DATA = [
-    { name: '0-35', value: 35, color: '#10b981' },   // Segment 1 (35 units wide)
-    { name: '35-70', value: 35, color: '#f59e0b' },  // Segment 2 (35 units wide)
-    { name: '70-100', value: 30, color: '#ef4444' }, // Segment 3 (30 units wide)
+    { name: '0-35', value: 35, color: '#eab308' },
+    { name: '35-70', value: 35, color: '#f59e0b' },
+    { name: '70-100', value: 30, color: '#ef4444' },
 ];
 
 export default function PieChartWithNeedlePhishing({ label, currentValue }: { label: string; currentValue: number }) {

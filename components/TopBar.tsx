@@ -11,7 +11,7 @@ export default function TopBar() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
-  
+
   // Use resolvedTheme to handle system preference correctly
   const isDark = mounted && (resolvedTheme === "dark" || theme === "dark");
 
@@ -25,29 +25,39 @@ export default function TopBar() {
           : "bg-white border-gray-100 shadow-sm"}`}
     >
       {/* Brand Section */}
-      <div className="flex items-center gap-6 w-[350px] shrink-0">
+      <div className="flex items-center gap-6 w-[450px] shrink-0 ml-4">
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="relative group"
+          whileHover={{ scale: 1.1 }}
+          className="relative"
         >
-          <div className={`absolute -inset-1 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000
-            ${isDark ? "bg-blue-500" : "bg-slate-400"}`}></div>
+          {/* Soft ambient glow behind the logo (No Box) */}
+          <div className={`absolute inset-0 blur-3xl opacity-30 rounded-full
+      ${isDark ? "bg-blue-500" : "bg-blue-200"}`}
+          />
 
-          <div className={`relative h-16 w-16 p-1 rounded-xl border-2 overflow-hidden
-            ${isDark ? "border-blue-500/50 bg-slate-900" : "border-slate-300 bg-white"}`}
-          >
+          <div className="relative h-24 w-24 flex items-center justify-center">
             <Image
-              src="/logo2.jpg"
+              src="/cdot_logo.png"
               alt="GARUDA Logo"
-              width={64}
-              height={64}
-              className="object-contain"
+              width={110}  // Increased size
+              height={110} // Increased size
+              className={`object-contain w-full h-full transition-all duration-500
+          ${isDark ? "brightness-110" : "mix-blend-multiply"}`} // mix-blend helps white backgrounds disappear in light mode
               priority
             />
+
+            {/* Refined "Floating" Scan Line (Edge to Edge of the logo) */}
             <motion.div
-              animate={{ top: ["0%", "100%", "0%"] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              className="absolute left-0 right-0 h-[2px] bg-blue-400/50 shadow-cyan-500 shadow-sm z-10"
+              animate={{
+                top: ["10%", "90%", "10%"],
+                opacity: [0, 0.8, 0]
+              }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent z-10 shadow-[0_0_8px_cyan]"
             />
           </div>
         </motion.div>
@@ -56,67 +66,57 @@ export default function TopBar() {
           <motion.span
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className={`text-3xl font-black tracking-tight leading-none ${isDark ? "text-white" : "text-slate-900"}`}
+            className={`text-4xl font-black tracking-tighter leading-none ${isDark ? "text-white" : "text-slate-900"}`}
           >
-            C-DOT GARUDA
+            GARUDA
           </motion.span>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="h-[2px] w-4 bg-blue-600"></span>
-            <span className="text-[10px] uppercase tracking-[0.2em] font-extrabold text-blue-500">
-              Defense Intelligence
+          <div className="flex items-center gap-2 mt-2">
+            <motion.div
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="h-2 w-2 rounded-full bg-blue-600 shadow-[0_0_5px_blue]"
+            />
+            <span className={`text-[11px] uppercase tracking-[0.3em] font-bold ${isDark ? "text-blue-400" : "text-blue-600"}`}>
+              C-DOT Intelligence
             </span>
           </div>
         </div>
       </div>
 
-      {/* Main Single-Line Title */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 overflow-hidden">
+      {/* Main Single-Line Title with Fluid Scaling */}
+      <div className="flex-1 flex flex-col items-center justify-center min-w-0 px-6">
         <motion.h1
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className={`text-lg md:text-xl lg:text-2xl font-black tracking-tighter uppercase whitespace-nowrap transition-all
-            ${isDark ? "text-slate-100" : "text-slate-800"}`}
+          style={{
+            /* Fluid Scaling Formula: clamp(MIN, PREFERRED, MAX)
+               The text will scale between 14px and 24px based on 1.5% of the screen width 
+            */
+            fontSize: "clamp(14px, 1.5vw, 24px)"
+          }}
+          className={`font-black tracking-tighter uppercase whitespace-nowrap transition-all
+      ${isDark ? "text-slate-100" : "text-slate-800"}`}
         >
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-600">
-            Guardian With AI - driven Real - time ULTRA DATA ANALYTICS
+            Guardian With AI - driven Real - time ULTRASCALE DATA ANALYTICS
           </span>
         </motion.h1>
 
-        <div className="flex items-center gap-4 mt-1">
+        <div className="flex items-center gap-3 mt-1">
           <div className={`h-[1px] w-12 ${isDark ? "bg-slate-800" : "bg-slate-200"}`} />
-          <motion.span
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className={`text-[9px] font-mono tracking-[0.4em] font-bold ${isDark ? "text-blue-400" : "text-blue-600"}`}
-          >
+          <span className={`text-[9px] font-mono tracking-[0.3em] font-bold ${isDark ? "text-blue-400" : "text-blue-600"}`}>
             LIVE OPERATIONS DASHBOARD
-          </motion.span>
+          </span>
           <div className={`h-[1px] w-12 ${isDark ? "bg-slate-800" : "bg-slate-200"}`} />
         </div>
       </div>
 
-      {/* Actions Section */}
-      <div className="flex items-center justify-end w-[350px] gap-6">
+      {/* Actions Section - Minimized to give title priority */}
+      <div className="flex items-center justify-end w-[100px] shrink-0 ">
         <button
           onClick={() => setTheme(isDark ? "light" : "dark")}
-          className={`
-            relative p-3 rounded-xl border-2 transition-all duration-300 group
-            ${isDark
-              ? "bg-slate-900 border-slate-700 text-yellow-400 hover:border-blue-500"
-              : "bg-gray-50 border-gray-200 text-slate-600 hover:border-slate-400"}
-          `}
+          className={`p-2.5 rounded-xl border-2 transition-all duration-300 ${isDark ? "bg-slate-900 border-slate-700 text-yellow-400" : "bg-gray-50 border-gray-200 text-slate-600"
+            }`}
         >
-          <AnimatePresence mode="wait">
-            {isDark ? (
-              <motion.div key="sun" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
-                <Sun size={20} strokeWidth={2.5} />
-              </motion.div>
-            ) : (
-              <motion.div key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
-                <Moon size={20} strokeWidth={2.5} />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {isDark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
       </div>
     </header>

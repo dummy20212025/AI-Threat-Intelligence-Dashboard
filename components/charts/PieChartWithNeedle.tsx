@@ -2,11 +2,13 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
+
 const GAUGE_DATA = [
-    { name: '5000-10000', value: 5000, color: '#10b981' },
-    { name: '10,000-15,000', value: 5000, color: '#f59e0b' },
-    { name: '15,000-20,000', value: 5000, color: '#ef4444' },
+    { name: '5000-10000', value: 5000, color: '#eab308' }, 
+    { name: '10,000-15,000', value: 5000, color: '#f59e0b' }, 
+    { name: '15,000-20,000', value: 5000, color: '#ef4444' }, 
 ];
+
 
 export default function PieChartWithNeedle({ label, currentValue }: { label: string; currentValue: number }) {
     const min = 5000;

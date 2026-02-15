@@ -116,9 +116,6 @@ export default function PhishingTable({ isDark }: PhishingTableProps) {
               <h4 className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
                 Phishing Evidence Screenshot
               </h4>
-              <p className={`text-sm mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                Forensic capture of zero-day landing page
-              </p>
             </div>
           </div>
         </div>

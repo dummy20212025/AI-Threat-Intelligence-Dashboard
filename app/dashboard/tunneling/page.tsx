@@ -11,15 +11,13 @@ import {
     ChevronRight,
     RefreshCcw,
     ShieldAlert,
-    Clock,
-    Radar
+    Clock
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
-// Animation Wrappers (Reusing your standard variants)
-import { MDiv, itemVariants, containerVariants } from "@/components/framer/MotionWrappers";
+// Framer Motion Wrappers (Assuming these are in your components folder as per reference)
+import { MDiv, MH3, containerVariants, itemVariants } from "@/components/framer/MotionWrappers";
 
-export default function ReconShieldPage() {
+export default function Page() {
     const { theme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
@@ -32,6 +30,7 @@ export default function ReconShieldPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 12;
 
+    // Ensure component is mounted to avoid hydration mismatch
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -57,17 +56,10 @@ export default function ReconShieldPage() {
         setData([]);
     };
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchCSVData = async () => {
+        setIsLoading(true);
         try {
-            const params = new URLSearchParams();
-            if (quickRange) params.append('days', quickRange);
-            if (startDate) params.append('start', startDate);
-            if (endDate) params.append('end', endDate);
-
-            const response = await fetch(`/api/tunneling?${params}`);
-            if (!response.ok) throw new Error('Network response was not ok');
-            
+            const response = await fetch(`/dnstunnel.csv`);
             const csvText = await response.text();
 
             Papa.parse(csvText, {
@@ -75,16 +67,20 @@ export default function ReconShieldPage() {
                 skipEmptyLines: true,
                 complete: (results) => {
                     if (results.data.length > 0) {
-                        setHeaders(Object.keys(results.data[0] as Record<string, any>));
+                        setHeaders(Object.keys(results.data[0] as object));
                         setData(results.data as any[]);
                     }
+                    setIsLoading(false);
                     setCurrentPage(1);
+                },
+                error: (error: Error) => {
+                    console.error("Parsing error:", error);
+                    setIsLoading(false);
                 },
             });
         } catch (error) {
-            console.error("Error fetching port scan data:", error);
-        } finally {
-            setLoading(false);
+            console.error("Fetch error:", error);
+            setIsLoading(false);
         }
     };
 
@@ -94,208 +90,191 @@ export default function ReconShieldPage() {
         return data.slice(start, start + rowsPerPage);
     }, [data, currentPage]);
 
+    const [isLoading, setIsLoading] = useState(false);
+
     if (!mounted) return null;
 
     return (
-        <motion.div 
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-            className={`flex flex-col gap-8 w-full max-w-[1600px] mx-auto p-6 md:p-10 transition-colors duration-700 min-h-screen
-                ${isDark ? "bg-slate-950" : "bg-gray-50"}`}
-        >
-            {/* HEADER */}
-            <motion.div variants={itemVariants} className="flex justify-between items-end">
-                <div>
-                    <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight leading-tight transition-colors
-                        ${isDark ? "text-blue-500" : "text-blue-600"}`}>
-                        Tunneling Analysis
-                    </h2>
-                    <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: "8rem" }}
-                        className={`h-1.5 mt-2 rounded-full ${isDark ? "bg-purple-500/50" : "bg-purple-600/20"}`}
-                    />
-                </div>
-                <motion.button
-                    whileHover={{ scale: 1.05, color: '#a855f7' }}
-                    onClick={resetFilters}
-                    className={`flex items-center gap-2 text-[10px] font-bold uppercase transition-colors mb-2
-                        ${isDark ? "text-slate-500" : "text-gray-400"}`}
-                >
-                    <RefreshCcw size={12} /> Reset View
-                </motion.button>
-            </motion.div>
+        <div className={`flex flex-col min-h-screen w-full transition-colors duration-700 
+            ${isDark ? "bg-slate-950 text-white" : "bg-gray-50 text-slate-900"}`}>
 
-            {/* CONTROL PANEL */}
-            <motion.div 
-                variants={itemVariants}
-                className={`p-8 rounded-[2.5rem] border flex flex-wrap items-end gap-8 transition-all duration-500
-                    ${isDark 
-                        ? "bg-slate-900 border-slate-800 shadow-2xl shadow-black/50" 
-                        : "bg-white border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)]"}`}
+            <MDiv
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+                className="flex-1 flex flex-col gap-8 w-full max-w-[1600px] mx-auto p-6 md:p-10"
             >
-                <div className="flex flex-col gap-3">
-                    <label className={`text-[10px] font-bold uppercase ml-2 flex items-center gap-2
-                        ${isDark ? "text-slate-500" : "text-gray-400"}`}>
-                        <Clock size={12} /> Time Range
-                    </label>
-                    <div className="flex items-center gap-3">
-                        <input
-                            type="datetime-local"
-                            value={startDate}
-                            className={`border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500/20 transition-all outline-none
-                                ${isDark ? "bg-slate-800 text-slate-200" : "bg-gray-50 text-slate-800"}`}
-                            onChange={(e) => handleDateChange('start', e.target.value)}
-                        />
-                        <span className="text-gray-400 font-medium italic">to</span>
-                        <input
-                            type="datetime-local"
-                            value={endDate}
-                            className={`border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500/20 transition-all outline-none
-                                ${isDark ? "bg-slate-800 text-slate-200" : "bg-gray-50 text-slate-800"}`}
-                            onChange={(e) => handleDateChange('end', e.target.value)}
+                {/* HEADER */}
+                <MDiv variants={itemVariants} className="flex justify-between items-end">
+                    <div>
+                        <h2 className={`text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-tight transition-colors
+                            ${isDark ? "text-blue-500" : "text-blue-600"}`}>
+                            Tunneling Analysis
+                        </h2>
+                        <MDiv
+                            initial={{ width: 0 }}
+                            animate={{ width: "6rem" }}
+                            transition={{ delay: 0.5, duration: 0.8 }}
+                            className={`h-1 mt-2 rounded-full shadow-lg 
+                                ${isDark ? "bg-blue-500 shadow-blue-500/40" : "bg-blue-600 shadow-blue-600/20"}`}
                         />
                     </div>
-                </div>
+                    <button
+                        onClick={resetFilters}
+                        className={`flex items-center gap-2 text-[10px] font-bold uppercase transition-colors mb-2
+                            ${isDark ? "text-slate-500 hover:text-blue-400" : "text-gray-400 hover:text-blue-600"}`}
+                    >
+                        <RefreshCcw size={12} /> Reset View
+                    </button>
+                </MDiv>
 
-                <div className="flex flex-col gap-3">
-                    <label className={`text-[10px] font-bold uppercase ml-2 flex items-center gap-2
-                        ${isDark ? "text-slate-500" : "text-gray-400"}`}>
-                        <Filter size={12} /> Scanning Presets
-                    </label>
-                    <div className={`p-1.5 rounded-2xl ${isDark ? "bg-slate-800" : "bg-gray-50"}`}>
-                        {[1, 5, 15, 30].map((days) => (
-                            <button
-                                key={days}
-                                onClick={() => handleQuickRangeChange(days.toString())}
-                                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${quickRange === days.toString()
-                                    ? (isDark ? 'bg-purple-600 text-white' : 'bg-white text-purple-600 shadow-md scale-105')
-                                    : 'text-gray-400 hover:text-gray-600'
-                                    }`}
-                            >
-                                {days}d
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={fetchData}
-                    disabled={loading || (!quickRange && !startDate)}
-                    className={`ml-auto flex items-center gap-3 px-10 py-4 rounded-[1.5rem] shadow-xl transition-all font-bold text-sm text-white disabled:opacity-50
-                        ${isDark 
-                            ? "bg-purple-600 shadow-purple-900/40 hover:bg-purple-500" 
-                            : "bg-purple-600 shadow-purple-200 hover:bg-purple-700"}`}
+                {/* CONTROL PANEL */}
+                <MDiv
+                    variants={itemVariants}
+                    className={`p-8 rounded-[2.5rem] border transition-all duration-500 flex flex-wrap items-end gap-8
+                        ${isDark
+                            ? "bg-slate-900/50 border-slate-800 shadow-2xl shadow-black backdrop-blur-md"
+                            : "bg-white border-white/20 shadow-xl shadow-gray-200"}`}
                 >
-                    {loading ? <Loader2 className="animate-spin" size={20} /> : <Database size={20} />}
-                    {loading ? "Scanning Logs..." : "Pull Records"}
-                </motion.button>
-            </motion.div>
-
-            {/* DATA TABLE */}
-            <motion.div 
-                variants={itemVariants}
-                className={`rounded-[2.5rem] overflow-hidden border min-h-[500px] flex flex-col transition-all duration-500
-                    ${isDark 
-                        ? "bg-slate-900 border-slate-800 shadow-2xl shadow-black/60" 
-                        : "bg-white border-gray-100 shadow-[0_35px_70px_rgba(0,0,0,0.05)]"}`}
-            >
-                <div className="overflow-x-auto flex-1">
-                    <AnimatePresence mode='wait'>
-                        {data.length > 0 ? (
-                            <motion.table 
-                                key="table"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="w-full text-left"
-                            >
-                                <thead>
-                                    <tr className={isDark ? "bg-slate-800/50" : "bg-gray-50/50"}>
-                                        {headers.map((h) => (
-                                            <th key={h} className={`px-8 py-6 text-[10px] font-bold uppercase tracking-widest border-b
-                                                ${isDark ? "text-slate-400 border-slate-800" : "text-gray-400 border-gray-100"}`}>
-                                                {h.replace(/_/g, ' ')}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className={`divide-y ${isDark ? "divide-slate-800" : "divide-gray-50"}`}>
-                                    {paginatedData.map((row, i) => (
-                                        <motion.tr 
-                                            key={i} 
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: i * 0.02 }}
-                                            className={`transition-colors group
-                                                ${isDark 
-                                                    ? "even:bg-slate-900/30 odd:bg-slate-900/10 hover:bg-purple-900/20" 
-                                                    : "even:bg-gray-50/30 odd:bg-white hover:bg-purple-50/60"}`}
-                                        >
-                                            {headers.map((h) => (
-                                                <td key={h} className={`px-8 py-5 text-sm font-medium whitespace-nowrap
-                                                    ${isDark ? "text-slate-300" : "text-gray-600"}`}>
-                                                    {row[h]}
-                                                </td>
-                                            ))}
-                                        </motion.tr>
-                                    ))}
-                                </tbody>
-                            </motion.table>
-                        ) : (
-                            <motion.div 
-                                key="empty"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="h-[500px] flex flex-col items-center justify-center gap-5"
-                            >
-                                <div className={`p-8 rounded-full ${isDark ? "bg-purple-900/20 text-purple-400" : "bg-purple-50 text-purple-200"}`}>
-                                    <ShieldAlert size={48} strokeWidth={1.5} />
-                                </div>
-                                <div className="text-center">
-                                    <p className={`font-black text-lg uppercase tracking-tight ${isDark ? "text-slate-200" : "text-gray-800"}`}>SYSTEM READY</p>
-                                    <p className={`text-sm ${isDark ? "text-slate-500" : "text-gray-400"}`}>Select a date range and click "Pull Records" to query Elasticsearch.</p>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-
-                {/* PAGINATION */}
-                {data.length > 0 && (
-                    <div className={`p-8 border-t flex items-center justify-between backdrop-blur-sm
-                        ${isDark ? "bg-slate-900/80 border-slate-800" : "bg-white/80 border-gray-50"}`}>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? "text-slate-500" : "text-gray-400"}`}>
-                            Page {currentPage} / {totalPages}
-                        </span>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all disabled:opacity-30
-                                    ${isDark 
-                                        ? "border-slate-800 text-slate-400 hover:bg-slate-800" 
-                                        : "border-gray-100 text-gray-500 hover:bg-gray-50"}`}
-                            >
-                                <ChevronLeft size={16} /> Previous
-                            </button>
-                            <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all disabled:opacity-30
-                                    ${isDark 
-                                        ? "border-slate-800 text-slate-400 hover:bg-slate-800" 
-                                        : "border-gray-100 text-gray-500 hover:bg-gray-50"}`}
-                            >
-                                Next <ChevronRight size={16} />
-                            </button>
+                    {/* Date & Time Inputs */}
+                    <div className="flex flex-col gap-3">
+                        <label className={`text-[10px] font-bold uppercase ml-2 flex items-center gap-2 transition-colors
+                            ${isDark ? "text-slate-500" : "text-gray-400"}`}>
+                            <Clock size={12} /> Specific Time Range
+                        </label>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="datetime-local"
+                                value={startDate}
+                                className={`rounded-xl px-4 py-2.5 text-sm focus:ring-2 transition-all outline-none border-none
+                                    ${isDark ? "bg-slate-800 text-white focus:ring-blue-500/40" : "bg-gray-50 text-slate-900 focus:ring-blue-500/20"}`}
+                                onChange={(e) => handleDateChange('start', e.target.value)}
+                            />
+                            <span className={isDark ? "text-slate-600" : "text-gray-300"}>to</span>
+                            <input
+                                type="datetime-local"
+                                value={endDate}
+                                className={`rounded-xl px-4 py-2.5 text-sm focus:ring-2 transition-all outline-none border-none
+                                    ${isDark ? "bg-slate-800 text-white focus:ring-blue-500/40" : "bg-gray-50 text-slate-900 focus:ring-blue-500/20"}`}
+                                onChange={(e) => handleDateChange('end', e.target.value)}
+                            />
                         </div>
                     </div>
+
+                    {/* Quick Presets */}
+                    <div className="flex flex-col gap-3">
+                        <label className={`text-[10px] font-bold uppercase ml-2 flex items-center gap-2 transition-colors
+                            ${isDark ? "text-slate-500" : "text-gray-400"}`}>
+                            <Filter size={12} /> Presets
+                        </label>
+                        <div className={`p-1.5 rounded-2xl flex ${isDark ? "bg-slate-800" : "bg-gray-50"}`}>
+                            {[1, 5, 15, 30].map((days) => (
+                                <button
+                                    key={days}
+                                    onClick={() => handleQuickRangeChange(days.toString())}
+                                    className={`px-5 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${quickRange === days.toString()
+                                        ? (isDark ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md scale-105')
+                                        : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-400 hover:text-gray-600')
+                                        }`}
+                                >
+                                    {days}d
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                        onClick={fetchCSVData}
+                        disabled={isLoading}
+                        className={`font-bold py-2.5 px-8 rounded-xl transition-all shadow-lg active:transform active:scale-95 disabled:opacity-50
+                            ${isDark
+                                ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20"
+                                : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200"}`}
+                    >
+                        {isLoading ? "Fetching..." : "Get Data"}
+                    </button>
+                </MDiv>
+
+                {/* TABLE SECTION */}
+                <MDiv variants={itemVariants} className="w-full">
+                    {data.length > 0 ? (
+                        <div className={`rounded-[2.5rem] border overflow-hidden transition-all duration-500
+                            ${isDark ? "bg-slate-900 border-slate-800 shadow-2xl" : "bg-white border-gray-100 shadow-xl"}`}>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead>
+                                        <tr className={`uppercase text-[10px] font-bold tracking-widest border-b transition-colors
+                                            ${isDark ? "bg-slate-800/50 text-slate-400 border-slate-700" : "bg-gray-50 text-gray-500 border-gray-100"}`}>
+                                            {headers.map((header) => (
+                                                <th key={header} className="px-8 py-5">
+                                                    {header}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody className={`divide-y transition-colors ${isDark ? "divide-slate-800" : "divide-gray-100"}`}>
+                                        {paginatedData.map((row, index) => (
+                                            <tr key={index} className={`transition-all duration-300 
+                                                ${isDark ? "hover:bg-blue-900/10 text-slate-300" : "hover:bg-blue-50/50 text-gray-600"}`}>
+                                                {headers.map((header) => (
+                                                    <td key={`${index}-${header}`} className="px-8 py-4 whitespace-nowrap">
+                                                        {row[header]}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={`flex flex-col items-center justify-center h-80 rounded-[2.5rem] border-2 border-dashed transition-all duration-500
+                            ${isDark
+                                ? "bg-slate-900/30 border-slate-800 text-slate-500"
+                                : "bg-gray-50 border-gray-200 text-gray-400"}`}>
+                            <Database size={48} className="mb-4 opacity-20" />
+                            <p className="text-lg">
+                                No data loaded. Click <span className="font-semibold text-blue-500">"Get Data"</span> to view detection logs.
+                            </p>
+                        </div>
+                    )}
+                </MDiv>
+
+                {/* PAGINATION CONTROLS */}
+                {data.length > rowsPerPage && (
+                    <MDiv variants={itemVariants} className="flex justify-center items-center gap-4 mt-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className={`p-3 rounded-xl transition-all duration-300 disabled:opacity-30
+                ${isDark
+                                    ? "bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400"
+                                    : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"}`}
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+
+                        <div className={`px-6 py-2 rounded-xl font-bold text-sm border transition-all
+            ${isDark
+                                ? "bg-slate-900 border-slate-800 text-blue-400"
+                                : "bg-white border-gray-200 text-blue-600"}`}>
+                            Page {currentPage} <span className={isDark ? "text-slate-600" : "text-gray-300"}>of</span> {totalPages}
+                        </div>
+
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className={`p-3 rounded-xl transition-all duration-300 disabled:opacity-30
+                ${isDark
+                                    ? "bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400"
+                                    : "bg-white border border-gray-200 hover:bg-gray-50 text-gray-600"}`}
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                    </MDiv>
                 )}
-            </motion.div>
-        </motion.div>
+            </MDiv>
+        </div>
     );
 }
